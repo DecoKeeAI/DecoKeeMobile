@@ -28,7 +28,7 @@
 ---------------
 
 ### **食用步骤**
-1. [下载 DecoKeeMobile](https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V00.00.23/DecoKeeMobile.apk)
+1. [下载 DecoKeeMobile](https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V00.00.24/DecoKeeMobile.apk)
 
 2. 配置运行 DecoKeeAI 程序的电脑IP，点击Update然后敬请享用。
 
