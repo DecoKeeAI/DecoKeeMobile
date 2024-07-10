@@ -94,10 +94,10 @@ public class UpdateCheckUtil {
                             Log.d(TAG, "checkForUpdates: onResponse: found update info");
                             downladAndInstallUpdate(context, newVersion);
                             updateCheckCallback.accept(1);
-                            break;
+                            return;
                         } else if (cmpResult < 0) {
                             updateCheckCallback.accept(0);
-                            break;
+                            return;
                         }
                     }
                     updateCheckCallback.accept(0);
@@ -111,9 +111,11 @@ public class UpdateCheckUtil {
 
     public static void downladAndInstallUpdate(Context context, String newVersion) {
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        String url = "https://github.com/DecoKeeAI/DecoKeeAI/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
+        String url = "https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         String apkPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/DecoKeeMobile.apk";
+
+        Log.d(TAG, "downladAndInstallUpdate: final download URL: " + url);
 
         File apkFile = new File(apkPath);
         apkFile.deleteOnExit();
