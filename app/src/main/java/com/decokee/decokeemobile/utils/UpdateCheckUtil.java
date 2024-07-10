@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.TimeZone;
 import java.util.function.Consumer;
 
 import okhttp3.Call;
@@ -39,8 +40,17 @@ public class UpdateCheckUtil {
             return;
         }
 
+        TimeZone timeZone = TimeZone.getDefault();
+        String currentTimeZone = timeZone.getDisplayName(false, TimeZone.SHORT);
+        Log.d(TAG, "checkForUpdates: currentTimeZone: " + currentTimeZone);
+
+        String updateCheckUrl;
         // 这里应该是检查更新的API，通常是一个返回版本信息的HTTP请求
-        String updateCheckUrl = "https://raw.github.com/DecoKeeAI/DecoKeeMobile/main/ota/latest.json";
+        if ("GMT+08:00".equals(currentTimeZone)) {
+            updateCheckUrl = "https://gitee.com/decokeeai/DecoKeeMobile/raw/main/ota/latest.json";
+        } else {
+            updateCheckUrl = "https://raw.github.com/DecoKeeAI/DecoKeeMobile/main/ota/latest.json";
+        }
 
         // 使用例如OkHttp等网络库发起请求
         OkHttpClient client = new OkHttpClient();
@@ -111,11 +121,24 @@ public class UpdateCheckUtil {
 
     public static void downladAndInstallUpdate(Context context, String newVersion) {
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        String url = "https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+
+
+
+        TimeZone timeZone = TimeZone.getDefault();
+        String currentTimeZone = timeZone.getDisplayName(false, TimeZone.SHORT);
+
+        String downloadUrl;
+        // 这里应该是检查更新的API，通常是一个返回版本信息的HTTP请求
+        if ("GMT+08:00".equals(currentTimeZone)) {
+            downloadUrl = "https://gitee.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
+        } else {
+            downloadUrl = "https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
+        }
+
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
         String apkPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/DecoKeeMobile.apk";
 
-        Log.d(TAG, "downladAndInstallUpdate: final download URL: " + url);
+        Log.d(TAG, "downladAndInstallUpdate: final download URL: " + downloadUrl);
 
         File apkFile = new File(apkPath);
         apkFile.deleteOnExit();
@@ -141,7 +164,14 @@ public class UpdateCheckUtil {
                 Uri destinationUri = downloadManager.getUriForDownloadedFile(sDownloadId);
                 Log.d(TAG, "onReceive: DOWNLOAD_COMPLETE: destinationUri: " + destinationUri);
                 // Install the APK file
-                installApk(context);
+
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException ignored) {
+                    }
+                    installApk(context);
+                }).start();
             }
 
             sDownloadId = -1;
