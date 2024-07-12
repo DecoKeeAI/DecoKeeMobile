@@ -114,6 +114,12 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
                     runOnUiThread(() -> {
                         mConfigContainer.setVisibility(View.GONE);
+
+                        for (List<ActionItem> actionItems : mRowColActionKeyList) {
+                            for (ActionItem actionItem : actionItems) {
+                                actionItem.checkAndUpdateIconSize();
+                            }
+                        }
                     });
                     break;
             }
@@ -279,18 +285,19 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             }
         });
 
-        mShowConfigButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                runOnUiThread(() -> {
-                    if (mConfigContainer.getVisibility() == View.VISIBLE) {
-                        mConfigContainer.setVisibility(View.GONE);
-                    } else {
-                        mConfigContainer.setVisibility(View.VISIBLE);
+        mShowConfigButton.setOnClickListener(view -> runOnUiThread(() -> {
+            if (mConfigContainer.getVisibility() == View.VISIBLE) {
+                mConfigContainer.setVisibility(View.GONE);
+
+                for (List<ActionItem> actionItems : mRowColActionKeyList) {
+                    for (ActionItem actionItem : actionItems) {
+                        actionItem.checkAndUpdateIconSize();
                     }
-                });
+                }
+            } else {
+                mConfigContainer.setVisibility(View.VISIBLE);
             }
-        });
+        }));
 
 
         for (List<ActionItem> actionItems : mRowColActionKeyList) {
