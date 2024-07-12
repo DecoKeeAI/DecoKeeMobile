@@ -23,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -83,7 +84,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
     private Button mCleanCacheButton;
 
-    private Button mShowConfigButton;
+    private ImageView mShowConfigButton;
     private Button mCheckUpdateButton;
 
     private RelativeLayout mConfigContainer;
@@ -91,8 +92,6 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
     private final List<RelativeLayout> mButtonContainerList = new LinkedList<>();
 
     private RotaryButton mRotaryButton;
-
-    private int mConfigClickedCount = 0;
 
     private final Gson mGSON = new Gson();
 
@@ -110,7 +109,6 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
                 case MSG_HIDE_CONFIG_SETTINGS:
-                    mConfigClickedCount = 0;
 
                     if (!WebSocketClient.getInstance(MainActivity.this).isConnected()) return;
 
@@ -252,7 +250,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         mIpConfigText = findViewById(R.id.ip_config_input);
         mSaveIpButton = findViewById(R.id.ip_config_save_btn);
 
-        mShowConfigButton = findViewById(R.id.hidden_config_display_button);
+        mShowConfigButton = findViewById(R.id.settings_btn);
 
         mRotaryButton = findViewById(R.id.knob_0_1);
 
@@ -284,12 +282,13 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         mShowConfigButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mConfigClickedCount += 1;
-                if (mConfigClickedCount >= 5) {
-                    runOnUiThread(() -> {
+                runOnUiThread(() -> {
+                    if (mConfigContainer.getVisibility() == View.VISIBLE) {
+                        mConfigContainer.setVisibility(View.GONE);
+                    } else {
                         mConfigContainer.setVisibility(View.VISIBLE);
-                    });
-                }
+                    }
+                });
             }
         });
 
@@ -543,7 +542,6 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             } else {
                 mHandler.removeMessages(MSG_HIDE_CONFIG_SETTINGS);
                 mConfigContainer.setVisibility(View.VISIBLE);
-                mConfigClickedCount = 0;
 
                 mConnectionButton.setText("未连接");
                 mConnectionButton.setBackgroundColor(Color.GRAY);

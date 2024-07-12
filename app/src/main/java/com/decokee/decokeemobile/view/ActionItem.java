@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -59,6 +60,19 @@ public class ActionItem extends RelativeLayout {
         mCountdown = (TextView) findViewById(R.id.action_item_countdown);
         mAlertView = (ImageView) findViewById(R.id.action_alert_image);
         mCircularProgressBar = (CircularProgressBar) findViewById(R.id.progress_circular);
+
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mImageView.getLayoutParams();
+
+        // 获取父布局的宽高
+        mImageView.post(() -> {
+            int parentWidth = ((View) mImageView.getParent()).getWidth();
+            int parentHeight = ((View) mImageView.getParent()).getHeight();
+
+            // 设置ImageView宽高为父布局的80%
+            layoutParams.width = (int) (parentWidth * 0.8);
+            layoutParams.height = (int) (parentHeight * 0.8);
+            mImageView.setLayoutParams(layoutParams);
+        });
     }
 
     public void setActionTitle(String title) {
