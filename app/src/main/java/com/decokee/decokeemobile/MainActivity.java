@@ -18,14 +18,12 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -115,9 +113,15 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                     runOnUiThread(() -> {
                         mConfigContainer.setVisibility(View.GONE);
 
-                        for (ActionItem actionItem : mRowColActionKeyList) {
-                            actionItem.checkAndUpdateIconSize();
-                        }
+                        mHandler.postDelayed(() -> {
+                            int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
+                            updateItemSize(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
+
+                            for (ActionItem actionItem : mRowColActionKeyList) {
+                                actionItem.checkAndUpdateIconSize();
+                            }
+                        }, 500);
+
                     });
                     break;
             }
@@ -141,7 +145,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
         mConfigContainer = findViewById(R.id.config_container);
 
-        mKeyConfigItemsContainer =  findViewById(R.id.button_items_container);
+        mKeyConfigItemsContainer = findViewById(R.id.button_items_container);
 
         mAppVersionText = findViewById(R.id.app_version_text);
 
@@ -178,7 +182,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                 String colCount = mColCountText.getText().toString();
 
                 mMaxRowNum = Integer.parseInt(rowCount);
-                mMaxColNum =Integer.parseInt(colCount);
+                mMaxColNum = Integer.parseInt(colCount);
 
                 edit.putString(Constants.USER_KEY_MATRIX_SETTING, mMaxRowNum + "x" + mMaxColNum);
                 edit.apply();
@@ -211,9 +215,14 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             if (mConfigContainer.getVisibility() == View.VISIBLE) {
                 mConfigContainer.setVisibility(View.GONE);
 
-                for (ActionItem actionItem : mRowColActionKeyList) {
-                    actionItem.checkAndUpdateIconSize();
-                }
+                mHandler.postDelayed(() -> {
+                    int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
+                    updateItemSize(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
+
+                    for (ActionItem actionItem : mRowColActionKeyList) {
+                        actionItem.checkAndUpdateIconSize();
+                    }
+                }, 500);
             } else {
                 mConfigContainer.setVisibility(View.VISIBLE);
             }
@@ -348,11 +357,14 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         mRowCountText.setText(String.valueOf(mMaxRowNum));
         mColCountText.setText(String.valueOf(mMaxColNum));
 
-        int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
-
-        addActionItemsToRelativeLayout(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
 
         mHandler.postDelayed(() -> {
+            int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
+            addActionItemsToRelativeLayout(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
+        }, 1000);
+
+        mHandler.postDelayed(() -> {
+
             checkAndConnectServer(null);
         }, 3000);
     }
@@ -751,14 +763,36 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         view.setPosition(pos);
     }
 
-    public void addActionItemsToRelativeLayout(RelativeLayout parentLayout, int rows, int cols, int margin) {
+    private void updateItemSize(RelativeLayout parentLayout, int rows, int cols, int margin) {
+        int screenWidth = parentLayout.getWidth();
+        int screenHeight = parentLayout.getHeight();
+
+//        int minParentSideSize = Math.min(screenWidth, screenHeight);
+//        int maxRowCol = Math.max(rows, cols);
+        int maxSize = Math.min((screenWidth / cols), screenHeight / rows) - margin;
+
+        for (int i = 0; i < parentLayout.getChildCount(); i++) {
+            View childView = parentLayout.getChildAt(i);
+            ViewGroup.LayoutParams oldLayoutParam = childView.getLayoutParams();
+            oldLayoutParam.width = maxSize;
+            oldLayoutParam.height = maxSize;
+
+            childView.setLayoutParams(oldLayoutParam);
+        }
+    }
+
+    private void addActionItemsToRelativeLayout(RelativeLayout parentLayout, int rows, int cols, int margin) {
         parentLayout.removeAllViews();
         mRowColActionKeyList.clear();
 
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        int screenWidth = parentLayout.getWidth();
+        int screenHeight = parentLayout.getHeight();
 
-        int maxSize = Math.min(screenWidth, screenHeight) / cols;
+//        int minParentSideSize = Math.min(screenWidth, screenHeight);
+//        int maxRowCol = Math.max(rows, cols);
+        int maxSize = Math.min((screenWidth / cols), screenHeight / rows) - margin;
+
+        Log.d(TAG, "addActionItemsToRelativeLayout: screenWidth: " + screenWidth + " screenHeight: " + screenHeight + " rows: " + rows + " Col: " + cols + " maxSize: " + maxSize);
 
         int previousViewId = 0; // 用于跟踪前一个视图的 ID
         for (int row = 0; row < rows; row++) {
