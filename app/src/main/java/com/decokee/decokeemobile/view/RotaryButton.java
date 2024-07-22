@@ -21,7 +21,7 @@ public class RotaryButton extends View {
 
     private static final String TAG = RotaryButton.class.getSimpleName();
 
-    private static final float INNER_RING_WIDTH = 1.0f;
+    private static final float INNER_RING_WIDTH = 0.6f;
 
     private ImageView mImageView;
     private ImageView mAlertView;
@@ -62,7 +62,7 @@ public class RotaryButton extends View {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(20);
+        mPaint.setStrokeWidth(10);
 
         mInnerPaint = new Paint();
         mInnerPaint.setAntiAlias(true);

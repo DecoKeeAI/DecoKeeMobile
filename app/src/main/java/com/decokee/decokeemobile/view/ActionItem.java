@@ -33,6 +33,8 @@ public class ActionItem extends RelativeLayout {
     private TextView mCountdown;
     private CircularProgressBar mCircularProgressBar;
 
+    private String mKeyCode = "";
+
     private String mLastLoadImgPath = "";
     private Bitmap mBitmap;
 
@@ -60,6 +62,16 @@ public class ActionItem extends RelativeLayout {
         mCountdown = (TextView) findViewById(R.id.action_item_countdown);
         mAlertView = (ImageView) findViewById(R.id.action_alert_image);
         mCircularProgressBar = (CircularProgressBar) findViewById(R.id.progress_circular);
+
+        setBackgroundColor(Color.BLACK);
+    }
+
+    public String getKeyCode() {
+        return mKeyCode;
+    }
+
+    public void setKeyCode(String keyCode) {
+        mKeyCode = keyCode;
     }
 
     public void setActionTitle(String title) {
@@ -86,7 +98,7 @@ public class ActionItem extends RelativeLayout {
             typefaceStyle |= Typeface.ITALIC;
         }
 
-        Log.d(TAG, "setTextStyle: Style: " + style + " typefaceStyle: " + typefaceStyle);
+//        Log.d(TAG, "setTextStyle: Style: " + style + " typefaceStyle: " + typefaceStyle);
 
         mActionTitle.setTypeface(mActionTitle.getTypeface(), typefaceStyle);
 

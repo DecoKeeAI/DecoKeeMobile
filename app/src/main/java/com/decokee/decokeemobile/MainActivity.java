@@ -43,7 +43,6 @@ import com.decokee.decokeemobile.view.RotaryButton;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,7 +71,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             "android.permission.ACCESS_COARSE_LOCATION"};
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private List<List<ActionItem>> mRowColActionKeyList = new ArrayList<>();
+    private List<ActionItem> mRowColActionKeyList = new ArrayList<>();
 
     private Button mConnectionButton;
     private TextView mProfileInfo;
@@ -80,7 +79,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
     private EditText mIpConfigText;
     private Button mSaveIpButton;
-    private Spinner mKeyMatrixSpinner;
+    private EditText mRowCountText;
+    private EditText mColCountText;
 
     private Button mCleanCacheButton;
 
@@ -89,7 +89,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
     private RelativeLayout mConfigContainer;
 
-    private final List<RelativeLayout> mButtonContainerList = new LinkedList<>();
+    private RelativeLayout mKeyConfigItemsContainer;
 
     private RotaryButton mRotaryButton;
 
@@ -115,17 +115,15 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                     runOnUiThread(() -> {
                         mConfigContainer.setVisibility(View.GONE);
 
-                        for (List<ActionItem> actionItems : mRowColActionKeyList) {
-                            for (ActionItem actionItem : actionItems) {
-                                actionItem.checkAndUpdateIconSize();
-                            }
+                        for (ActionItem actionItem : mRowColActionKeyList) {
+                            actionItem.checkAndUpdateIconSize();
                         }
                     });
                     break;
             }
         }
     };
-    private int mUserKeyMatrixSettingIdx;
+    private String mUserKeyMatrixSettingIdx;
     private int mMaxColNum;
     private int mMaxRowNum;
     private List<ConfigInfo> mActiveConfigInfos;
@@ -141,63 +139,9 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
         verifyStoragePermissions(this);
 
-        ArrayList<ActionItem> key23KeyItems = new ArrayList<>();
-        key23KeyItems.add(findViewById(R.id.key_23_1_1));
-        key23KeyItems.add(findViewById(R.id.key_23_1_2));
-        key23KeyItems.add(findViewById(R.id.key_23_1_3));
-        key23KeyItems.add(findViewById(R.id.key_23_2_1));
-        key23KeyItems.add(findViewById(R.id.key_23_2_2));
-        key23KeyItems.add(findViewById(R.id.key_23_2_3));
-        mRowColActionKeyList.add(key23KeyItems);
-
-        ArrayList<ActionItem> key24KeyItems = new ArrayList<>();
-        key24KeyItems.add(findViewById(R.id.key_24_1_1));
-        key24KeyItems.add(findViewById(R.id.key_24_1_2));
-        key24KeyItems.add(findViewById(R.id.key_24_1_3));
-        key24KeyItems.add(findViewById(R.id.key_24_1_4));
-        key24KeyItems.add(findViewById(R.id.key_24_2_1));
-        key24KeyItems.add(findViewById(R.id.key_24_2_2));
-        key24KeyItems.add(findViewById(R.id.key_24_2_3));
-        key24KeyItems.add(findViewById(R.id.key_24_2_4));
-        mRowColActionKeyList.add(key24KeyItems);
-
-        ArrayList<ActionItem> key33KeyItems = new ArrayList<>();
-        key33KeyItems.add(findViewById(R.id.key_33_1_1));
-        key33KeyItems.add(findViewById(R.id.key_33_1_2));
-        key33KeyItems.add(findViewById(R.id.key_33_1_3));
-        key33KeyItems.add(findViewById(R.id.key_33_2_1));
-        key33KeyItems.add(findViewById(R.id.key_33_2_2));
-        key33KeyItems.add(findViewById(R.id.key_33_2_3));
-        key33KeyItems.add(findViewById(R.id.key_33_3_1));
-        key33KeyItems.add(findViewById(R.id.key_33_3_2));
-        key33KeyItems.add(findViewById(R.id.key_33_3_3));
-        mRowColActionKeyList.add(key33KeyItems);
-
-        ArrayList<ActionItem> key34KeyItems = new ArrayList<>();
-        key34KeyItems.add(findViewById(R.id.key_34_1_1));
-        key34KeyItems.add(findViewById(R.id.key_34_1_2));
-        key34KeyItems.add(findViewById(R.id.key_34_1_3));
-        key34KeyItems.add(findViewById(R.id.key_34_1_4));
-        key34KeyItems.add(findViewById(R.id.key_34_2_1));
-        key34KeyItems.add(findViewById(R.id.key_34_2_2));
-        key34KeyItems.add(findViewById(R.id.key_34_2_3));
-        key34KeyItems.add(findViewById(R.id.key_34_2_4));
-        key34KeyItems.add(findViewById(R.id.key_34_3_1));
-        key34KeyItems.add(findViewById(R.id.key_34_3_2));
-        key34KeyItems.add(findViewById(R.id.key_34_3_3));
-        key34KeyItems.add(findViewById(R.id.key_34_3_4));
-        mRowColActionKeyList.add(key34KeyItems);
-
         mConfigContainer = findViewById(R.id.config_container);
-        RelativeLayout buttonContainer23 = findViewById(R.id.button_23_holder);
-        RelativeLayout buttonContainer24 = findViewById(R.id.button_24_holder);
-        RelativeLayout buttonContainer33 = findViewById(R.id.button_33_holder);
-        RelativeLayout buttonContainer34 = findViewById(R.id.button_34_holder);
 
-        mButtonContainerList.add(buttonContainer23);
-        mButtonContainerList.add(buttonContainer24);
-        mButtonContainerList.add(buttonContainer33);
-        mButtonContainerList.add(buttonContainer34);
+        mKeyConfigItemsContainer =  findViewById(R.id.button_items_container);
 
         mAppVersionText = findViewById(R.id.app_version_text);
 
@@ -209,46 +153,6 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-
-
-        mKeyMatrixSpinner = findViewById(R.id.key_matrix_spinner);
-        ArrayAdapter<String> keyMatrixAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Constants.KEY_MATRIX_LIST);
-        mKeyMatrixSpinner.setAdapter(keyMatrixAdapter);
-
-        mKeyMatrixSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                Log.d(TAG, "onItemSelected: position: " + position + " Item: " + Constants.KEY_MATRIX_LIST[position]);
-
-                mUserKeyMatrixSettingIdx = position;
-
-                String keyMatrix = Constants.KEY_MATRIX_LIST[mUserKeyMatrixSettingIdx];
-                String[] keyMatrixInfo = keyMatrix.split("x");
-                mMaxRowNum = Integer.parseInt(keyMatrixInfo[0]);
-                mMaxColNum = Integer.parseInt(keyMatrixInfo[1]);
-
-                SharedPreferences.Editor edit = mPreferences.edit();
-                String configedIp = mIpConfigText.getText().toString();
-                edit.putInt(Constants.USER_KEY_MATRIX_SETTING, position);
-                edit.apply();
-
-                for (int i = 0; i < mButtonContainerList.size(); i++) {
-                    RelativeLayout buttonContainer = mButtonContainerList.get(i);
-                    buttonContainer.setVisibility(i == mUserKeyMatrixSettingIdx ? View.VISIBLE : View.GONE);
-                }
-
-                if (TextUtils.isEmpty(configedIp) || configedIp.equals("ws://") || configedIp.equals("wss://")) {
-                    return;
-                }
-
-                checkAndConnectServer(configedIp);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         mConnectionButton = findViewById(R.id.connection_status);
         mProfileInfo = findViewById(R.id.profile_info_text);
@@ -269,7 +173,25 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                 SharedPreferences.Editor edit = mPreferences.edit();
                 String configedIp = mIpConfigText.getText().toString();
                 edit.putString(USER_CONFIG_IP, configedIp);
+
+                String rowCount = mRowCountText.getText().toString();
+                String colCount = mColCountText.getText().toString();
+
+                mMaxRowNum = Integer.parseInt(rowCount);
+                mMaxColNum =Integer.parseInt(colCount);
+
+                edit.putString(Constants.USER_KEY_MATRIX_SETTING, mMaxRowNum + "x" + mMaxColNum);
                 edit.apply();
+
+                int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
+
+                addActionItemsToRelativeLayout(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
+
+                if (TextUtils.isEmpty(configedIp) || configedIp.equals("ws://") || configedIp.equals("wss://")) {
+                    return;
+                }
+
+
                 checkAndConnectServer(configedIp);
             }
         });
@@ -289,22 +211,13 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             if (mConfigContainer.getVisibility() == View.VISIBLE) {
                 mConfigContainer.setVisibility(View.GONE);
 
-                for (List<ActionItem> actionItems : mRowColActionKeyList) {
-                    for (ActionItem actionItem : actionItems) {
-                        actionItem.checkAndUpdateIconSize();
-                    }
+                for (ActionItem actionItem : mRowColActionKeyList) {
+                    actionItem.checkAndUpdateIconSize();
                 }
             } else {
                 mConfigContainer.setVisibility(View.VISIBLE);
             }
         }));
-
-
-        for (List<ActionItem> actionItems : mRowColActionKeyList) {
-            for (ActionItem button : actionItems) {
-                button.setOnTouchListener(this);
-            }
-        }
 
 
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
@@ -352,11 +265,9 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                         .cleanCache();
 
                 runOnUiThread(() -> {
-                    for (List<ActionItem> actionItems : mRowColActionKeyList) {
-                        for (ActionItem actionItem : actionItems) {
-                            actionItem.setActionTitle("");
-                            actionItem.setImageResource("", true);
-                        }
+                    for (ActionItem actionItem : mRowColActionKeyList) {
+                        actionItem.setActionTitle("");
+                        actionItem.setImageResource("", true);
                     }
                     mRotaryButton.setImageResource("");
                 });
@@ -425,19 +336,25 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             mPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         }
 
-        mUserKeyMatrixSettingIdx = mPreferences.getInt(Constants.USER_KEY_MATRIX_SETTING, 0);
+        mUserKeyMatrixSettingIdx = mPreferences.getString(Constants.USER_KEY_MATRIX_SETTING, "2x3");
 
-        mKeyMatrixSpinner.setSelection(mUserKeyMatrixSettingIdx);
-
-        String keyMatrix = Constants.KEY_MATRIX_LIST[mUserKeyMatrixSettingIdx];
-        String[] keyMatrixInfo = keyMatrix.split("x");
+        String[] keyMatrixInfo = mUserKeyMatrixSettingIdx.split("x");
         mMaxRowNum = Integer.parseInt(keyMatrixInfo[0]);
         mMaxColNum = Integer.parseInt(keyMatrixInfo[1]);
 
-        for (int i = 0; i < mButtonContainerList.size(); i++) {
-            RelativeLayout buttonContainer = mButtonContainerList.get(i);
-            buttonContainer.setVisibility(i == mUserKeyMatrixSettingIdx ? View.VISIBLE : View.GONE);
-        }
+        mRowCountText = findViewById(R.id.row_count_input);
+        mColCountText = findViewById(R.id.col_count_input);
+
+        mRowCountText.setText(String.valueOf(mMaxRowNum));
+        mColCountText.setText(String.valueOf(mMaxColNum));
+
+        int margin = getResources().getDimensionPixelSize(R.dimen.action_item_margin); // 例如，定义在 dimens.xml 中的间隔大小
+
+        addActionItemsToRelativeLayout(mKeyConfigItemsContainer, mMaxRowNum, mMaxColNum, margin);
+
+        mHandler.postDelayed(() -> {
+            checkAndConnectServer(null);
+        }, 3000);
     }
 
     private void verifyStoragePermissions(Activity activity) {
@@ -456,71 +373,11 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        String keyCode = "";
+
+        ActionItem actionItemView = (ActionItem) view;
+        String keyCode = actionItemView.getKeyCode();
 
         boolean isKeyUp = motionEvent.getAction() == MotionEvent.ACTION_UP;
-
-        switch (view.getId()) {
-            case R.id.key_23_1_1:
-            case R.id.key_24_1_1:
-            case R.id.key_33_1_1:
-            case R.id.key_34_1_1:
-                keyCode = "1,1";
-                break;
-            case R.id.key_23_1_2:
-            case R.id.key_24_1_2:
-            case R.id.key_33_1_2:
-            case R.id.key_34_1_2:
-                keyCode = "1,2";
-                break;
-            case R.id.key_23_1_3:
-            case R.id.key_24_1_3:
-            case R.id.key_33_1_3:
-            case R.id.key_34_1_3:
-                keyCode = "1,3";
-                break;
-            case R.id.key_24_1_4:
-            case R.id.key_34_1_4:
-                keyCode = "1,4";
-                break;
-            case R.id.key_23_2_1:
-            case R.id.key_24_2_1:
-            case R.id.key_33_2_1:
-            case R.id.key_34_2_1:
-                keyCode = "2,1";
-                break;
-            case R.id.key_23_2_2:
-            case R.id.key_24_2_2:
-            case R.id.key_33_2_2:
-            case R.id.key_34_2_2:
-                keyCode = "2,2";
-                break;
-            case R.id.key_23_2_3:
-            case R.id.key_24_2_3:
-            case R.id.key_33_2_3:
-            case R.id.key_34_2_3:
-                keyCode = "2,3";
-                break;
-            case R.id.key_24_2_4:
-            case R.id.key_34_2_4:
-                keyCode = "2,4";
-                break;
-            case R.id.key_33_3_1:
-            case R.id.key_34_3_1:
-                keyCode = "3,1";
-                break;
-            case R.id.key_33_3_2:
-            case R.id.key_34_3_2:
-                keyCode = "3,2";
-                break;
-            case R.id.key_33_3_3:
-            case R.id.key_34_3_3:
-                keyCode = "3,3";
-                break;
-            case R.id.key_34_3_4:
-                keyCode = "3,4";
-                break;
-        }
 
         Integer lastState = mKeyLastStateMap.get(keyCode);
         int newState = isKeyUp ? 1 : 0;
@@ -609,15 +466,14 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                 continue;
             }
 
-            List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-            if (actionItems == null || actionItems.isEmpty()) continue;
+            if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) continue;
 
             Log.d(TAG, "onProfileChange: Setup View for " + rowIdx + ":" + colIdx + ":" + mMaxColNum + " SetImgResource: " + resourcePath);
             int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
 
-            if (keyItemIdx >= actionItems.size()) continue;
+            if (keyItemIdx >= mRowColActionKeyList.size()) continue;
 
-            ActionItem keyButton = actionItems.get(keyItemIdx);
+            ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
 
             Log.d(TAG, "onProfileChange: Load for Icon ResId: " + iconResourceId + " Path: " + resourcePath);
             runOnUiThread(() -> {
@@ -666,12 +522,11 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             return;
         }
 
-        List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-        if (actionItems == null || actionItems.isEmpty()) return;
+        if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) return;
 
         int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
-        if (keyItemIdx >= actionItems.size()) return;
-        ActionItem keyButton = actionItems.get(keyItemIdx);
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
         runOnUiThread(() -> keyButton.showAlert(alertResId));
     }
 
@@ -696,13 +551,12 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
             return;
         }
 
-        List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-        if (actionItems == null || actionItems.isEmpty()) return;
+        if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) return;
 
         int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
-        if (keyItemIdx >= actionItems.size()) return;
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
 
-        ActionItem keyButton = actionItems.get(keyItemIdx);
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
         runOnUiThread(() -> keyButton.setImageResource(resourcePath));
     }
 
@@ -716,12 +570,11 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
         if (rowIdx == 0) return;
 
-        List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-        if (actionItems == null || actionItems.isEmpty()) return;
+        if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) return;
 
         int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
-        if (keyItemIdx >= actionItems.size()) return;
-        ActionItem keyButton = actionItems.get(keyItemIdx);
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
         runOnUiThread(() -> keyButton.showProgress(percent));
     }
 
@@ -735,13 +588,12 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
         if (rowIdx == 0) return;
 
-        List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-        if (actionItems == null || actionItems.isEmpty()) return;
+        if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) return;
 
         int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
-        if (keyItemIdx >= actionItems.size()) return;
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
 
-        ActionItem keyButton = actionItems.get(keyItemIdx);
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
         runOnUiThread(() -> keyButton.startCountdown(timeout));
     }
 
@@ -806,13 +658,12 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
         if (keyConfigInfo == null) return;
 
-        List<ActionItem> actionItems = mRowColActionKeyList.get(mUserKeyMatrixSettingIdx);
-        if (actionItems == null || actionItems.isEmpty()) return;
+        if (mRowColActionKeyList == null || mRowColActionKeyList.isEmpty()) return;
 
         int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
-        if (keyItemIdx >= actionItems.size()) return;
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
 
-        ActionItem keyButton = actionItems.get(keyItemIdx);
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
 
 
         String iconResId;
@@ -898,6 +749,55 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
         view.setTextColor(color);
         view.setActionTitle(text);
         view.setPosition(pos);
+    }
+
+    public void addActionItemsToRelativeLayout(RelativeLayout parentLayout, int rows, int cols, int margin) {
+        parentLayout.removeAllViews();
+        mRowColActionKeyList.clear();
+
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        int maxSize = Math.min(screenWidth, screenHeight) / cols;
+
+        int previousViewId = 0; // 用于跟踪前一个视图的 ID
+        for (int row = 0; row < rows; row++) {
+            previousViewId = 0; // 每行开始时重置 previousViewId
+            for (int col = 0; col < cols; col++) {
+                ActionItem actionItem = new ActionItem(this);
+                actionItem.setId(View.generateViewId()); // 生成唯一 ID
+
+                actionItem.setKeyCode((row + 1) + "," + (col + 1));
+
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(maxSize, maxSize);
+                params.setMargins(margin, margin, 0, 0);
+
+                if (row == 0) {
+                    // 第一行
+                    if (col > 0) {
+                        // 非第一列
+                        params.addRule(RelativeLayout.END_OF, previousViewId);
+                    }
+                } else {
+                    // 非第一行
+                    if (col == 0) {
+                        // 每行的第一个
+                        params.addRule(RelativeLayout.BELOW, parentLayout.getChildAt((row - 1) * cols).getId());
+                    } else {
+                        // 非第一列
+                        params.addRule(RelativeLayout.END_OF, previousViewId);
+                        params.addRule(RelativeLayout.BELOW, parentLayout.getChildAt((row - 1) * cols + col).getId());
+                    }
+                }
+
+                parentLayout.addView(actionItem, params);
+                previousViewId = actionItem.getId();
+
+                actionItem.setOnTouchListener(MainActivity.this);
+
+                mRowColActionKeyList.add(actionItem);
+            }
+        }
     }
 
 }

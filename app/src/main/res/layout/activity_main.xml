@@ -60,34 +60,72 @@
             android:hint="请输入客户端IP"
             android:text="ws://" />
 
+        <TextView
+            android:id="@+id/row_count_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/ip_config_input"
+            android:layout_toEndOf="@id/ip_config_input"
+            android:text="ROW: "
+            android:layout_marginStart="12dp"
+            android:textColor="@color/black" />
+
+        <EditText
+            android:id="@+id/row_count_input"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/ip_config_input"
+            android:layout_toEndOf="@id/row_count_display"
+            android:layout_marginStart="12dp"
+            android:ems="10"
+            android:inputType="numberSigned"
+            android:minEms="1"
+            android:hint="Row Count"
+            android:text="2" />
+
+        <TextView
+            android:id="@+id/col_count_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/row_count_input"
+            android:layout_toEndOf="@id/row_count_input"
+            android:text="COL: "
+            android:layout_marginStart="12dp"
+            android:textColor="@color/black" />
+
+        <EditText
+            android:id="@+id/col_count_input"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/ip_config_input"
+            android:layout_marginStart="12dp"
+            android:layout_toEndOf="@id/col_count_display"
+            android:ems="10"
+            android:hint="Col Count"
+            android:inputType="numberSigned"
+            android:minEms="1"
+            android:text="3" />
+
         <Button
             android:id="@+id/ip_config_save_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/ip_config_input"
             android:layout_marginStart="20dp"
-            android:layout_toEndOf="@id/ip_config_input"
+            android:layout_toEndOf="@id/col_count_input"
             android:text="Update"
             android:textColor="@color/white" />
 
-        <Spinner
-            android:id="@+id/key_matrix_spinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@id/ip_config_save_btn"
-            android:layout_alignBottom="@id/ip_config_save_btn"
-            android:layout_marginStart="50dp"
-            android:layout_toEndOf="@id/ip_config_save_btn" />
 
         <Button
             android:id="@+id/check_update_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/ip_config_save_btn"
-            android:layout_alignBottom="@id/ip_config_save_btn"
+            android:layout_alignTop="@id/ip_config_input"
+            android:layout_alignBottom="@id/ip_config_input"
             android:layout_marginStart="20dp"
             android:layout_marginBottom="5dp"
-            android:layout_toEndOf="@id/key_matrix_spinner"
+            android:layout_toEndOf="@id/ip_config_save_btn"
             android:background="@android:color/holo_blue_bright"
             android:text="Check Update"
             android:textColor="@color/white" />
@@ -111,352 +149,13 @@
         android:orientation="horizontal">
 
         <RelativeLayout
-            android:id="@+id/button_23_holder"
+            android:id="@+id/button_items_container"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="3"
             android:gravity="center"
             android:visibility="visible">
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_1_1"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_23_1_2"
-                android:layout_marginEnd="24dp"
-                android:layout_toStartOf="@id/key_23_1_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_1_2"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_23_1_3"
-                android:layout_marginEnd="24dp"
-                android:layout_toStartOf="@id/key_23_1_3"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_1_3"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_2_1"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_23_2_2"
-                android:layout_marginEnd="24dp"
-                android:layout_toStartOf="@id/key_23_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_2_2"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_below="@id/key_23_1_2"
-                android:layout_alignStart="@id/key_23_1_2"
-                android:layout_marginTop="24dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_23_2_3"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_23_2_2"
-                android:layout_marginStart="24dp"
-                android:layout_toEndOf="@id/key_23_2_2"
-                android:background="@color/black" />
         </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/button_24_holder"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:gravity="center"
-            android:visibility="gone">
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_1_1"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_1_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_24_1_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_1_2"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_1_3"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_24_1_3"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_1_3"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_1_4"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_24_1_4"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_1_4"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_2_1"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_2_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_24_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_2_2"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_below="@id/key_24_1_2"
-                android:layout_alignStart="@id/key_24_1_2"
-                android:layout_marginTop="16dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_2_3"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_2_2"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_24_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_24_2_4"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_24_2_3"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_24_2_3"
-                android:background="@color/black" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/button_33_holder"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:gravity="center"
-            android:visibility="gone">
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_1_1"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_1_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_33_1_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_1_2"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_1_3"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_33_1_3"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_1_3"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_2_1"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_2_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_33_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_2_2"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_below="@id/key_33_1_2"
-                android:layout_alignStart="@id/key_33_1_2"
-                android:layout_marginTop="16dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_2_3"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_2_2"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_33_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_3_1"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_3_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_33_3_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_3_2"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_below="@id/key_33_2_2"
-                android:layout_alignStart="@id/key_33_2_2"
-                android:layout_marginTop="16dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_33_3_3"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_alignTop="@id/key_33_3_2"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_33_3_2"
-                android:background="@color/black" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/button_34_holder"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3"
-            android:gravity="center"
-            android:visibility="gone">
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_1_1"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_1_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_34_1_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_1_2"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_1_3"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_34_1_3"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_1_3"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_1_4"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_34_1_4"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_1_4"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_2_1"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_2_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_34_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_2_2"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_below="@id/key_34_1_2"
-                android:layout_alignStart="@id/key_34_1_2"
-                android:layout_marginTop="16dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_2_3"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_2_2"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_34_2_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_2_4"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_2_3"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_34_2_3"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_3_1"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_3_2"
-                android:layout_marginEnd="16dp"
-                android:layout_toStartOf="@id/key_34_3_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_3_2"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_below="@id/key_34_2_2"
-                android:layout_alignStart="@id/key_34_2_2"
-                android:layout_marginTop="16dp"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_3_3"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_3_2"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_34_3_2"
-                android:background="@color/black" />
-
-            <com.decokee.decokeemobile.view.ActionItem
-                android:id="@+id/key_34_3_4"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_alignTop="@id/key_34_3_3"
-                android:layout_marginStart="16dp"
-                android:layout_toEndOf="@id/key_34_3_3"
-                android:background="@color/black" />
-        </RelativeLayout>
-
 
         <com.decokee.decokeemobile.view.RotaryButton
             android:id="@+id/knob_0_1"

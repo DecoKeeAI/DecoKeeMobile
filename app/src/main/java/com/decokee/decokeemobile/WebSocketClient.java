@@ -97,7 +97,7 @@ public class WebSocketClient {
     private ResourceInfo mDeviceActiveProfileInfo = null;
 
     private final Gson mGSON = new Gson();
-    private int mDeviceKeyMatrix;
+    private String mDeviceKeyMatrix;
     private String mAppVersion = "";
 
     public WebSocketClient(Context context) {
@@ -150,7 +150,7 @@ public class WebSocketClient {
                 .url(url)
                 .build();
 
-        mDeviceKeyMatrix = mPreferences.getInt(Constants.USER_KEY_MATRIX_SETTING, 0);
+        mDeviceKeyMatrix = mPreferences.getString(Constants.USER_KEY_MATRIX_SETTING, "2x3");
 
         mWebSocket = client.newWebSocket(request, new WebSocketListener() {
             @Override
@@ -641,11 +641,9 @@ public class WebSocketClient {
 
     private void sendDeviceKeyMatrix() {
 
-        String keyMatrixStr = Constants.KEY_MATRIX_LIST[mDeviceKeyMatrix];
+        Log.d(TAG, "sendDeviceKeyMatrix: Device KeyMatrix: " + mDeviceKeyMatrix);
 
-        Log.d(TAG, "sendDeviceKeyMatrix: Device KeyMatrix: " + keyMatrixStr);
-
-        String[] keyMatrixInfo = keyMatrixStr.split("x");
+        String[] keyMatrixInfo = mDeviceKeyMatrix.split("x");
         if (keyMatrixInfo.length != 2) {
             Log.w(TAG, "sendDeviceKeyMatrix: Invalid Device KeyMatrix.");
             return;
