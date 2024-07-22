@@ -33,7 +33,7 @@ Get started today and discover a faster, smarter, and more personalized way to i
 ---------------
 
 ### **Usage Steps**
-1. [Download DecoKeeMobile](https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V00.00.24/DecoKeeMobile.apk)
+1. [Download DecoKeeMobile](https://github.com/DecoKeeAI/DecoKeeMobile/releases)
 
 2. Configure the computer IP that runs the DecoKeeAI program, click Update, and enjoy.
 
