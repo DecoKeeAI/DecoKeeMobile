@@ -154,7 +154,6 @@
             android:layout_height="match_parent"
             android:layout_weight="3"
             android:gravity="center"
-            android:background="@color/purple_200"
             android:visibility="visible">
         </RelativeLayout>
 
