@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
 import com.decokee.decokeemobile.BuildConfig;
@@ -19,7 +18,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.TimeZone;
-import java.util.function.Consumer;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -32,25 +30,22 @@ public class UpdateCheckUtil {
     private static final String TAG = UpdateCheckUtil.class.getSimpleName();
     private static long sDownloadId = -1;
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void checkForUpdates(Context context, Consumer<Integer> updateCheckCallback) {
+    private static final String[] UPDATE_CHECK_URLS = { "https://raw.github.com/DecoKeeAI/DecoKeeMobile/main/ota/latest.json", "https://gitee.com/decokeeai/DecoKeeMobile/raw/main/ota/latest.json" };
+    private static final String[] DOWNLOAD_URL_PREFIX = { "https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V", "https://gitee.com/DecoKeeAI/DecoKeeMobile/releases/download/V" };
+
+    public static void checkForUpdates(Context context, CallbackConsumer<Integer> updateCheckCallback) {
+        checkForUpdates(context, updateCheckCallback, 0);
+    }
+
+    public static void checkForUpdates(Context context, CallbackConsumer<Integer> updateCheckCallback, int checkIdx) {
 
         if (sDownloadId != -1) {
             updateCheckCallback.accept(2);
             return;
         }
 
-        TimeZone timeZone = TimeZone.getDefault();
-        String currentTimeZone = timeZone.getDisplayName(false, TimeZone.SHORT);
-        Log.d(TAG, "checkForUpdates: currentTimeZone: " + currentTimeZone);
-
-        String updateCheckUrl;
-        // 这里应该是检查更新的API，通常是一个返回版本信息的HTTP请求
-        if ("GMT+08:00".equals(currentTimeZone)) {
-            updateCheckUrl = "https://gitee.com/decokeeai/DecoKeeMobile/raw/main/ota/latest.json";
-        } else {
-            updateCheckUrl = "https://raw.github.com/DecoKeeAI/DecoKeeMobile/main/ota/latest.json";
-        }
+        String updateCheckUrl = UPDATE_CHECK_URLS[checkIdx];
+        Log.d(TAG, "checkForUpdates: updateCheckUrl: " + updateCheckUrl);
 
         // 使用例如OkHttp等网络库发起请求
         OkHttpClient client = new OkHttpClient();
@@ -58,24 +53,31 @@ public class UpdateCheckUtil {
                 .url(updateCheckUrl)
                 .build();
 
-
         sDownloadId = -1;
 
         client.newCall(request).enqueue(new Callback() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onFailure(Call call, IOException e) {
-                updateCheckCallback.accept(0);
+
+                if (checkIdx >= UPDATE_CHECK_URLS.length) {
+                    updateCheckCallback.accept(0);
+                } else {
+                    checkForUpdates(context, updateCheckCallback, checkIdx + 1);
+                }
                 // 处理请求失败
                 Log.w(TAG, "onFailure: ", e);
             }
 
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    updateCheckCallback.accept(0);
-                    throw new IOException("Unexpected code " + response);
+                    if (checkIdx >= UPDATE_CHECK_URLS.length) {
+                        updateCheckCallback.accept(0);
+                        throw new IOException("Unexpected code " + response);
+                    } else {
+                        checkForUpdates(context, updateCheckCallback, checkIdx + 1);
+                        return;
+                    }
                 }
 
                 String responseString = response.body().string();
@@ -94,7 +96,11 @@ public class UpdateCheckUtil {
                     String[] newVersionInfo = newVersion.trim().split("\\.");
 
                     if (newVersionInfo.length != 3) {
-                        updateCheckCallback.accept(0);
+                        if (checkIdx >= UPDATE_CHECK_URLS.length) {
+                            updateCheckCallback.accept(0);
+                        } else {
+                            checkForUpdates(context, updateCheckCallback, checkIdx + 1);
+                        }
                         return;
                     }
 
@@ -102,7 +108,7 @@ public class UpdateCheckUtil {
                         int cmpResult = Integer.parseInt(newVersionInfo[i]) - Integer.parseInt(currentVersionInfo[i]);
                         if (cmpResult > 0) {
                             Log.d(TAG, "checkForUpdates: onResponse: found update info");
-                            downladAndInstallUpdate(context, newVersion);
+                            downloadAndInstallUpdate(context, newVersion, checkIdx);
                             updateCheckCallback.accept(1);
                             return;
                         } else if (cmpResult < 0) {
@@ -112,28 +118,21 @@ public class UpdateCheckUtil {
                     }
                     updateCheckCallback.accept(0);
                 } catch (Exception e) {
-                    updateCheckCallback.accept(0);
+                    if (checkIdx >= UPDATE_CHECK_URLS.length) {
+                        updateCheckCallback.accept(0);
+                    } else {
+                        checkForUpdates(context, updateCheckCallback, checkIdx + 1);
+                    }
                     e.printStackTrace();
                 }
             }
         });
     }
 
-    public static void downladAndInstallUpdate(Context context, String newVersion) {
+    public static void downloadAndInstallUpdate(Context context, String newVersion, int checkIdx) {
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
-
-
-        TimeZone timeZone = TimeZone.getDefault();
-        String currentTimeZone = timeZone.getDisplayName(false, TimeZone.SHORT);
-
-        String downloadUrl;
-        // 这里应该是检查更新的API，通常是一个返回版本信息的HTTP请求
-        if ("GMT+08:00".equals(currentTimeZone)) {
-            downloadUrl = "https://gitee.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
-        } else {
-            downloadUrl = "https://github.com/DecoKeeAI/DecoKeeMobile/releases/download/V" + newVersion + "/DecoKeeMobile.apk"; // replace with your APK URL
-        }
+        String downloadUrl = DOWNLOAD_URL_PREFIX[checkIdx] + newVersion + "/DecoKeeMobile.apk";
 
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
         String apkPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/DecoKeeMobile.apk";
@@ -149,6 +148,7 @@ public class UpdateCheckUtil {
         request.setTitle("DecoKeeMobile");
         request.setDescription("Downloading...");
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        Log.d(TAG, "downladAndInstallUpdate: Start to download into : " + Environment.DIRECTORY_DOWNLOADS);
 
         sDownloadId = downloadManager.enqueue(request);
     }

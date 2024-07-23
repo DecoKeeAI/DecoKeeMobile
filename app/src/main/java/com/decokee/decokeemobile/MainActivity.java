@@ -28,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.decokee.decokeemobile.bean.ConfigInfo;
@@ -133,7 +132,6 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
     private List<ConfigInfo> mActiveConfigInfos;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
