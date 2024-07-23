@@ -5,14 +5,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.decokee.decokeemobile.utils.Constants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +27,8 @@ public class RotaryButton extends View {
 
     private static final float INNER_RING_WIDTH = 0.6f;
 
-    private ImageView mImageView;
+    private static final int[] IMG_SIZE = { 100, 100 };
+
     private ImageView mAlertView;
 
     private float mCenterX, mCenterY;
@@ -39,7 +44,7 @@ public class RotaryButton extends View {
 
 
     private String mLastLoadImgPath = "";
-    private Bitmap mBitmap;
+    private Bitmap mMainBitmap;
 
     public RotaryButton(Context context) {
         super(context);
@@ -70,7 +75,6 @@ public class RotaryButton extends View {
         mInnerPaint.setStrokeWidth(20);
         mAngle = 270;
 
-        mImageView = new ImageView(getContext());
         mAlertView = new ImageView(getContext());
     }
 
@@ -89,12 +93,25 @@ public class RotaryButton extends View {
         canvas.drawCircle(mCenterX, mCenterY, mRadius * INNER_RING_WIDTH, mInnerPaint);
         canvas.drawLine(mCenterX, mCenterY, mCenterX + (float) Math.cos(Math.toRadians(mAngle)) * mRadius, mCenterY + (float) Math.sin(Math.toRadians(mAngle)) * mRadius, mPaint);
 
+        if (mMainBitmap != null && !mMainBitmap.isRecycled()) {
+            float scaleFactor = Math.min((float) getWidth() * INNER_RING_WIDTH * Constants.IMG_DISPLAY_FILL_PERCENT / mMainBitmap.getWidth(), getHeight() * INNER_RING_WIDTH * Constants.IMG_DISPLAY_FILL_PERCENT / mMainBitmap.getHeight());
 
-        mImageView.layout((int) (mCenterX - getWidth() / 2), (int) (mCenterY - getHeight() / 2), (int) (mCenterX + getWidth() / 2), (int) (mCenterY + getHeight() / 2));
-        mImageView.draw(canvas);
+            // Calculate the scaled width and height
+            int scaledWidth = (int) (mMainBitmap.getWidth() * scaleFactor);
+            int scaledHeight = (int) (mMainBitmap.getHeight() * scaleFactor);
+
+            // Calculate the offset values to center the scaled bitmap
+            int offsetX = (int) mCenterX - scaledWidth / 2;
+            int offsetY = (int) mCenterY - scaledHeight / 2;
+
+            // Create a Rect object to define the destination rectangle
+            Rect destRect = new Rect(offsetX, offsetY, offsetX + scaledWidth, offsetY + scaledHeight);
+
+            canvas.drawBitmap(mMainBitmap, null, destRect, mPaint);
+        }
 
         if (mAlertView.getVisibility() == View.VISIBLE) {
-            mAlertView.layout((int) (mCenterX - getWidth() / 2), (int) (mCenterY - getHeight() / 2), (int) (mCenterX + getWidth() / 2), (int) (mCenterY + getHeight() / 2));
+            mAlertView.layout((int) (mCenterX - getWidth() / 2.0f), (int) (mCenterY - getHeight() / 2.0f), (int) (mCenterX + getWidth() / 2.0f), (int) (mCenterY + getHeight() / 2.0f));
             mAlertView.draw(canvas);
         }
     }
@@ -177,11 +194,10 @@ public class RotaryButton extends View {
 
     public void setImageResource(String filePath) {
         if (TextUtils.isEmpty(filePath) || !new File(filePath).exists()) {
-            mImageView.setImageBitmap(null);
-            if (mBitmap != null) {
-                mBitmap.recycle();
+            if (mMainBitmap != null) {
+                mMainBitmap.recycle();
             }
-            mBitmap = null;
+            mMainBitmap = null;
             mLastLoadImgPath = "";
             invalidate();
             return;
@@ -192,16 +208,17 @@ public class RotaryButton extends View {
         }
         mLastLoadImgPath = filePath;
 
-        if (mBitmap != null) {
-            mBitmap.recycle();
+        if (mMainBitmap != null) {
+            mMainBitmap.recycle();
         }
-        mBitmap = null;
+        mMainBitmap = null;
         try (FileInputStream fis = new FileInputStream(filePath)) {
-            mBitmap = BitmapFactory.decodeStream(fis);
-            Log.d(TAG, "setImageResource: width: " + mBitmap.getWidth() + " height: " + mBitmap.getHeight());
-            Log.d(TAG, "setImageResource: Image width: " + mBitmap.getWidth() + " height: " + mBitmap.getHeight());
-            mImageView.setImageBitmap(mBitmap);
-            mImageView.setScaleType(ImageView.ScaleType.CENTER);
+            mMainBitmap = BitmapFactory.decodeStream(fis);
+            Log.d(TAG, "setImageResource: width: " + mMainBitmap.getWidth() + " height: " + mMainBitmap.getHeight());
+            Log.d(TAG, "setImageResource: Image width: " + mMainBitmap.getWidth() + " height: " + mMainBitmap.getHeight());
+
+            mMainBitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

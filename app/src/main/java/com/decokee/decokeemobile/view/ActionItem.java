@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.decokee.decokeemobile.R;
+import com.decokee.decokeemobile.utils.Constants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -174,8 +175,8 @@ public class ActionItem extends RelativeLayout {
             int parentHeight = ((View) mImageView.getParent()).getHeight();
 
             // 设置ImageView宽高为父布局的80%
-            layoutParams.width = (int) (parentWidth * 0.8);
-            layoutParams.height = (int) (parentHeight * 0.8);
+            layoutParams.width = (int) (parentWidth * Constants.IMG_DISPLAY_FILL_PERCENT);
+            layoutParams.height = (int) (parentHeight * Constants.IMG_DISPLAY_FILL_PERCENT);
             mImageView.setLayoutParams(layoutParams);
         });
     }
