@@ -79,7 +79,6 @@
             android:layout_marginStart="12dp"
             android:ems="10"
             android:inputType="numberSigned"
-            android:minEms="1"
             android:hint="Row Count"
             android:text="2" />
 
@@ -103,7 +102,6 @@
             android:ems="10"
             android:hint="Col Count"
             android:inputType="numberSigned"
-            android:minEms="1"
             android:text="3" />
 
         <Button

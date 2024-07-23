@@ -182,6 +182,21 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
                 mMaxRowNum = Integer.parseInt(rowCount);
                 mMaxColNum = Integer.parseInt(colCount);
 
+                if (mMaxRowNum > 10) {
+                    mMaxRowNum = 10;
+                } else if (mMaxRowNum < 1) {
+                    mMaxRowNum = 1;
+                }
+
+                mRowCountText.setText(String.valueOf(mMaxRowNum));
+
+                if (mMaxColNum > 10) {
+                    mMaxColNum = 10;
+                } else if (mMaxColNum < 1) {
+                    mMaxColNum = 1;
+                }
+                mColCountText.setText(String.valueOf(mMaxColNum));
+
                 edit.putString(Constants.USER_KEY_MATRIX_SETTING, mMaxRowNum + "x" + mMaxColNum);
                 edit.apply();
 
