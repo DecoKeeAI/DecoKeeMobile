@@ -58,6 +58,7 @@ import com.google.gson.reflect.TypeToken;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -76,6 +77,8 @@ import okio.ByteString;
 
 public class WebSocketClient {
 
+    private static final boolean DEBUG_RAW_DATA = false;
+
     private static final String TAG = WebSocketClient.class.getSimpleName();
 
     private static final String DEVICE_ACTIVE_PROFILE = "DEVICE_ACTIVE_PROFILE";
@@ -89,6 +92,8 @@ public class WebSocketClient {
     private WSClientDataListener mWSClientDataListener;
 
     private final ConcurrentHashMap<String, ResourceDownloadInfo> mResourceRequestMap = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<String, ResourceDetailData> mKeyRawResDataMap = new ConcurrentHashMap<>();
 
     private final CopyOnWriteArrayList<String> mSubResourceDownloadList = new CopyOnWriteArrayList<>();
 
@@ -182,7 +187,6 @@ public class WebSocketClient {
 
             @Override
             public void onMessage(@NonNull WebSocket webSocket, @NonNull ByteString bytes) {
-                Log.i(TAG, "onMessage: binary");
                 try {
                     Object decodeData = checkAndDecodeData(bytes);
                     if (decodeData == null) {
@@ -286,47 +290,16 @@ public class WebSocketClient {
                     } else {
                         ResourceDetailData resourceDetailData = (ResourceDetailData) decodeData;
 
-                        String resourceId = resourceDetailData.getResourceId();
-                        ResourceDownloadInfo resourceDownloadInfo = mResourceRequestMap.get(resourceId);
-                        if (resourceDownloadInfo == null) {
-                            return;
+                        switch (resourceDetailData.getProtocolType()) {
+                            case Constants.PROTOCOL_RESOURCE_FILE:
+                                handleResourceFileDataReceived(resourceDetailData);
+                                break;
+                            case Constants.PROTOCOL_RAW_DATA:
+                                handleRawResourceDataReceived(resourceDetailData);
+                                break;
                         }
 
-                        Log.d(TAG, "onMessage: decodedData: " + resourceDetailData.getData().length);
 
-                        ResourceInfo currentResourceInfo = ResourceManager.getInstance().getResourceInfo(resourceId);
-
-                        if (currentResourceInfo != null) {
-                            Log.d(TAG, "onMessage: currentResourceInfo.getVersion(): " + currentResourceInfo.getVersion() + " resourceDownloadInfo.getVersion(): " + resourceDownloadInfo.getVersion());
-                            Log.d(TAG, "onMessage: currentResourceInfo.getGenerateTime(): " + currentResourceInfo.getGenerateTime() + " resourceDownloadInfo.getGenerateTime(): " + resourceDownloadInfo.getGenerateTime());
-                        }
-                        if (currentResourceInfo != null
-                                && (currentResourceInfo.getVersion() != resourceDownloadInfo.getVersion()
-                                || !currentResourceInfo.getGenerateTime().equals(resourceDownloadInfo.getGenerateTime()))) {
-                            ResourceManager.getInstance().deleteResource(resourceId);
-                        }
-
-                        int sequenceId = resourceDetailData.getSequenceId();
-                        ResourceManager.getInstance().saveResource(resourceId, resourceDownloadInfo.getName(),
-                                resourceDownloadInfo.getFileName(), resourceDetailData.getData(), sequenceId,
-                                resourceDownloadInfo.getVersion(), resourceDownloadInfo.getGenerateTime());
-
-                        if (sequenceId == 0) {
-                            Log.d(TAG, "onMessage: Received ResourceInfo: " + resourceId);
-                            mResourceRequestMap.remove(resourceId);
-
-                            if (mPendingConfigLoadId.equals(resourceId)) {
-                                checkForAllRelatedResources(resourceId);
-                            } else {
-                                mSubResourceDownloadList.remove(resourceId);
-
-                                if (mSubResourceDownloadList.isEmpty()) {
-                                    if (!"".equals(mPendingConfigLoadId)) {
-                                        notifyProfileChanged(mPendingConfigLoadId);
-                                    }
-                                }
-                            }
-                        }
                     }
                 } catch (Exception e) {
                     Log.w(TAG, "onMessage: error", e);
@@ -394,14 +367,14 @@ public class WebSocketClient {
         byte[] dataBytes = byteString.toByteArray();
 
 //        Log.d(TAG, "checkAndDecodeData: byteString: " + byteString + " dataBytes.length: " + dataBytes.length + " dataBytes: " + Arrays.toString(dataBytes));
-        Log.d(TAG, "checkAndDecodeData: byteString: " + byteString + " dataBytes.length: " + dataBytes.length);
+        if (DEBUG_RAW_DATA) Log.d(TAG, "checkAndDecodeData: byteString: " + byteString + " dataBytes.length: " + dataBytes.length);
 
         int protocolType = bytesToInt(new byte[]{(byte) (dataBytes[0])});
 
-        Log.d(TAG, "checkAndDecodeData: protocolType: " + protocolType);
+        if (DEBUG_RAW_DATA) Log.d(TAG, "checkAndDecodeData: protocolType: " + protocolType);
 
         int dataLength = bytesToInt(new byte[]{dataBytes[1], dataBytes[2]});
-        Log.d(TAG, "checkAndDecodeData: dataLength: " + dataLength + " byteToLength1: " + (bytesToInt(new byte[]{dataBytes[1]})) + " byteToLength2: " + (bytesToInt(new byte[]{dataBytes[2]})));
+        if (DEBUG_RAW_DATA) Log.d(TAG, "checkAndDecodeData: dataLength: " + dataLength + " byteToLength1: " + (bytesToInt(new byte[]{dataBytes[1]})) + " byteToLength2: " + (bytesToInt(new byte[]{dataBytes[2]})));
 
         int sum = 0;
         for (int i = 0; i < dataLength; i++) {
@@ -410,10 +383,10 @@ public class WebSocketClient {
         int resultCheckSum = sum % 0xFF;
         int checkSum = (dataBytes[3 + dataLength] & 0xFF);
 
-        Log.d(TAG, "checkAndDecodeData: dataCheckSum: " + checkSum + " ResultCheckSum: " + resultCheckSum + " originalByte: " + dataBytes[dataBytes.length - 1]);
+        if (DEBUG_RAW_DATA) Log.d(TAG, "checkAndDecodeData: dataCheckSum: " + checkSum + " ResultCheckSum: " + resultCheckSum + " originalByte: " + dataBytes[dataBytes.length - 1]);
 
         if (resultCheckSum != checkSum) {
-            Log.w(TAG, "checkAndDecodeData: invalid checksum.");
+            if (DEBUG_RAW_DATA) Log.w(TAG, "checkAndDecodeData: invalid checksum.");
             return null;
         }
 
@@ -424,23 +397,49 @@ public class WebSocketClient {
                 return dataJson;
             case 0xA2:
                 int opCode = bytesToInt(new byte[]{dataBytes[3]});
-                if (opCode != 0x01) break;
 
-                int resourceIdPreId = bytesToInt(new byte[]{dataBytes[4]});
-                int resourceIdEndId = bytesToInt(new byte[]{dataBytes[5], dataBytes[6], dataBytes[7], dataBytes[8]});
+                switch (opCode) {
+                    default:
+                        break;
+                    case Constants.PROTOCOL_RESOURCE_FILE:
 
-                int sequenceId = bytesToInt(new byte[]{dataBytes[9]});
+                        int resourceIdPreId = bytesToInt(new byte[]{dataBytes[4]});
+                        int resourceIdEndId = bytesToInt(new byte[]{dataBytes[5], dataBytes[6], dataBytes[7], dataBytes[8]});
 
-                ResourceDetailData resourceDetailData = new ResourceDetailData();
-                resourceDetailData.setResourceId(resourceIdPreId + "-" + resourceIdEndId);
-                resourceDetailData.setSequenceId(sequenceId);
+                        int sequenceId = bytesToInt(new byte[]{dataBytes[9]});
 
-                byte[] data = Arrays.copyOfRange(dataBytes, 10, dataBytes.length - 1);
-                resourceDetailData.setData(data);
-//                Log.d(TAG, "checkAndDecodeData: get resource " + resourceDetailData.getResourceId() + " SequenceId: " + resourceDetailData.getSequenceId() + " DataLength: " + data.length + " data: " + Arrays.toString(data));
-                Log.d(TAG, "checkAndDecodeData: get resource " + resourceDetailData.getResourceId() + " SequenceId: " + resourceDetailData.getSequenceId() + " DataLength: " + data.length);
+                        ResourceDetailData resourceDetailData = new ResourceDetailData();
+                        resourceDetailData.setProtocolType(opCode);
 
-                return resourceDetailData;
+                        resourceDetailData.setResourceInfoDetail(resourceIdPreId + "-" + resourceIdEndId);
+                        resourceDetailData.setSequenceId(sequenceId);
+
+                        byte[] data = Arrays.copyOfRange(dataBytes, 10, dataBytes.length - 1);
+                        resourceDetailData.setData(data);
+//                      Log.d(TAG, "checkAndDecodeData: get resource " + resourceDetailData.getResourceId() + " SequenceId: " + resourceDetailData.getSequenceId() + " DataLength: " + data.length + " data: " + Arrays.toString(data));
+                        Log.d(TAG, "checkAndDecodeData: get resource " + resourceDetailData.getResourceInfoDetail() + " SequenceId: " + resourceDetailData.getSequenceId() + " DataLength: " + data.length);
+
+                        return resourceDetailData;
+                    case Constants.PROTOCOL_RAW_DATA:
+                        ResourceDetailData rawResDetailData = new ResourceDetailData();
+                        rawResDetailData.setProtocolType(opCode);
+
+                        int rawResType = bytesToInt(new byte[]{dataBytes[4]});
+                        rawResDetailData.setResType(rawResType);
+
+                        int keyRowId = bytesToInt(new byte[]{dataBytes[5]});
+                        int keyColId = bytesToInt(new byte[]{dataBytes[6]});
+
+                        rawResDetailData.setResourceInfoDetail(keyRowId + "," + keyColId);
+
+                        int dataSequenceId = bytesToInt(new byte[]{dataBytes[9]});
+                        rawResDetailData.setSequenceId(dataSequenceId);
+
+                        byte[] rawResData = Arrays.copyOfRange(dataBytes, 10, dataBytes.length - 1);
+                        rawResDetailData.setData(rawResData);
+
+                        return rawResDetailData;
+                }
         }
         return null;
     }
@@ -699,6 +698,85 @@ public class WebSocketClient {
         return resourceIds;
     }
 
+    private void handleResourceFileDataReceived(ResourceDetailData resourceDetailData) throws IOException {
+        String resourceId = resourceDetailData.getResourceInfoDetail();
+        ResourceDownloadInfo resourceDownloadInfo = mResourceRequestMap.get(resourceId);
+        if (resourceDownloadInfo == null) {
+            return;
+        }
+
+        Log.d(TAG, "onMessage: decodedData: " + resourceDetailData.getData().length);
+
+        ResourceInfo currentResourceInfo = ResourceManager.getInstance().getResourceInfo(resourceId);
+
+        if (currentResourceInfo != null) {
+            Log.d(TAG, "onMessage: currentResourceInfo.getVersion(): " + currentResourceInfo.getVersion() + " resourceDownloadInfo.getVersion(): " + resourceDownloadInfo.getVersion());
+            Log.d(TAG, "onMessage: currentResourceInfo.getGenerateTime(): " + currentResourceInfo.getGenerateTime() + " resourceDownloadInfo.getGenerateTime(): " + resourceDownloadInfo.getGenerateTime());
+        }
+        if (currentResourceInfo != null
+                && (currentResourceInfo.getVersion() != resourceDownloadInfo.getVersion()
+                || !currentResourceInfo.getGenerateTime().equals(resourceDownloadInfo.getGenerateTime()))) {
+            ResourceManager.getInstance().deleteResource(resourceId);
+        }
+
+        int sequenceId = resourceDetailData.getSequenceId();
+        ResourceManager.getInstance().saveResource(resourceId, resourceDownloadInfo.getName(),
+                resourceDownloadInfo.getFileName(), resourceDetailData.getData(), sequenceId,
+                resourceDownloadInfo.getVersion(), resourceDownloadInfo.getGenerateTime());
+
+        if (sequenceId == 0) {
+            Log.d(TAG, "onMessage: Received ResourceInfo: " + resourceId);
+            mResourceRequestMap.remove(resourceId);
+
+            if (mPendingConfigLoadId.equals(resourceId)) {
+                checkForAllRelatedResources(resourceId);
+            } else {
+                mSubResourceDownloadList.remove(resourceId);
+
+                if (mSubResourceDownloadList.isEmpty()) {
+                    if (!"".equals(mPendingConfigLoadId)) {
+                        notifyProfileChanged(mPendingConfigLoadId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleRawResourceDataReceived(ResourceDetailData resourceDetailData) {
+        String keyCode = resourceDetailData.getResourceInfoDetail();
+        int sequenceId = resourceDetailData.getSequenceId();
+        ResourceDetailData rawResDetail = mKeyRawResDataMap.get(keyCode);
+
+        byte[] currentFrameDatas = resourceDetailData.getData();
+
+        byte[] mergedArray;
+        if (rawResDetail != null) {
+            byte[] cachedByteData = rawResDetail.getData();
+            int totalLength = currentFrameDatas.length + cachedByteData.length;
+            mergedArray = new byte[totalLength];
+            System.arraycopy(cachedByteData, 0, mergedArray, 0, cachedByteData.length);
+            System.arraycopy(currentFrameDatas, 0, mergedArray, 0, currentFrameDatas.length);
+        } else {
+            mergedArray = currentFrameDatas;
+        }
+
+        if (rawResDetail == null) {
+            rawResDetail = resourceDetailData;
+        }
+
+        if (sequenceId != 0) {
+            rawResDetail.setData(mergedArray);
+            rawResDetail.setSequenceId(sequenceId);
+            mKeyRawResDataMap.put(keyCode, rawResDetail);
+            return;
+        }
+
+        if (mWSClientDataListener != null) {
+            mWSClientDataListener.onShowRawData(keyCode, mergedArray);
+            mKeyRawResDataMap.remove(keyCode);
+        }
+    }
+
     public interface WSClientDataListener {
         void onConnectionStatusChange(boolean connected);
 
@@ -715,6 +793,8 @@ public class WebSocketClient {
         void onBrightnessChange(int level);
 
         void onStateChange(String keyCode, int state);
+
+        void onShowRawData(String keyCode, byte[] resourceData);
     }
 
 }

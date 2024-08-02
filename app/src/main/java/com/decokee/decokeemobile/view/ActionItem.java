@@ -166,6 +166,19 @@ public class ActionItem extends RelativeLayout {
         }
     }
 
+    public void setRawViewData(byte[] data) {
+        mImageView.setImageBitmap(null);
+        if (mBitmap != null) {
+            mBitmap.recycle();
+        }
+        mBitmap = null;
+        mLastLoadImgPath = "";
+
+        mBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        mImageView.setImageBitmap(mBitmap);
+        mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    }
+
     public void checkAndUpdateIconSize() {
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mImageView.getLayoutParams();
 

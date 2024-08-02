@@ -710,6 +710,25 @@ public class MainActivity extends Activity implements View.OnTouchListener, WebS
 
     }
 
+    @Override
+    public void onShowRawData(String keyCode, byte[] resourceData) {
+//        Log.d(TAG, "onShowRawData: KeyCode: " + keyCode + " resourceData.length: " + resourceData.length);
+
+        String[] keyInfo = keyCode.split(",");
+
+        int rowIdx = Integer.parseInt(keyInfo[0]);
+        int colIdx = Integer.parseInt(keyInfo[1]);
+
+        if (rowIdx == 0) return;
+
+        int keyItemIdx = (rowIdx - 1) * mMaxColNum + (colIdx - 1);
+        if (keyItemIdx >= mRowColActionKeyList.size()) return;
+
+        ActionItem keyButton = mRowColActionKeyList.get(keyItemIdx);
+
+        runOnUiThread(() -> keyButton.setRawViewData(resourceData));
+    }
+
     private void checkAndConnectServer(String ip) {
         String newIp;
         if (ip == null) {

@@ -38,16 +38,18 @@ package com.decokee.decokeemobile.bean;
 import java.util.Arrays;
 
 public class ResourceDetailData {
-    private String resourceId;
+    private int protocolType;
+    private int resType;
+    private String resourceInfoDetail;
     private int sequenceId;
     private byte[] data;
 
-    public String getResourceId() {
-        return resourceId;
+    public String getResourceInfoDetail() {
+        return resourceInfoDetail;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setResourceInfoDetail(String resourceInfoDetail) {
+        this.resourceInfoDetail = resourceInfoDetail;
     }
 
     public int getSequenceId() {
@@ -66,10 +68,28 @@ public class ResourceDetailData {
         this.data = data;
     }
 
+    public int getProtocolType() {
+        return protocolType;
+    }
+
+    public void setProtocolType(int protocolType) {
+        this.protocolType = protocolType;
+    }
+
+    public int getResType() {
+        return resType;
+    }
+
+    public void setResType(int resType) {
+        this.resType = resType;
+    }
+
     @Override
     public String toString() {
         return "ResourceDetailData{" +
-                "resourceId='" + resourceId + '\'' +
+                "protocolType=" + protocolType +
+                ", resType=" + resType +
+                ", resourceId='" + resourceInfoDetail + '\'' +
                 ", sequenceId=" + sequenceId +
                 ", data=" + Arrays.toString(data) +
                 '}';
